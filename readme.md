@@ -75,14 +75,14 @@ includes temperature, humidity, co2, and volatile organic chemical (voc) sensors
  * ✅ ~pH sensor~
  * [ ] pid control mix to target setpoint pH/tds/ec - [_firmware in process_](https://github.com/GrayHatGuy/picopasco/tree/2bdc89169fcf1709cf48569881d38e65c02e824f/dev/picopasco-main-V4.3597447222071-alpha-hartree-pid)
  * [ ] sx1262 lora/wan - [_firmware in process_]()
- * [ ] wifi/bt/mqtt - [stage gate]
+ * [ ] wifi/bt/mqtt - [staged]()
 ## plan 
  *  ### controls
     *  lighting timers
     *  hvac triggers pid control
  *  ### connectivity   
+    *  lora(wan) - [in process]()
     *  wifi 
-    *  +lora(wan)
     *  mqtt
  *  ### ui 
     * local wifi/bt  
@@ -92,10 +92,10 @@ includes temperature, humidity, co2, and volatile organic chemical (voc) sensors
         -  xiao
         -  esp32
         -  wioterm
-    * platformio build/flash verify
+    * platformio - [in process]()
 *  ### vids
     *  example of runtime [firmware output](https://youtu.be/fia2N3TB2j8)
-    *  testing minimum [response time of relays](https://youtu.be/YmTmU25x0V8). 3 ms is the mininum trigger dwell otherwise relays fail to actuate mechanically.
+    *  testing minimum [response time of relays](https://youtu.be/YmTmU25x0V8) 3 ms is the mininum trigger dwell otherwise relays fail to actuate mechanically.
     *  [max power consumed](https://youtube.com/shorts/H6yiRs7PBLs?feature=share) 350 ma @ 5 volts [1.5 watt] during dry pump cycling.
     *  [initial power on test](https://youtu.be/p2OLT5P7gyc) failed to stop pumping due to a partial vacuum build up induced syphoning effect. 
         - solved with shorter tube length and shorter elevation head.
