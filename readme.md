@@ -81,8 +81,9 @@ includes temperature, humidity, co2, and volatile organic chemical (voc) sensors
     *  wifi -  [_verification_]() 
     *  mqtt -  [_hold_]() 
  *  ### ui 
-    * local wifi/bt  
-    * remote mobile app
+    * bt uart
+    * wifi AP
+    * lorawan mobile app 
  *  ### portability  
     *  alternate mcu
         -  xiao
