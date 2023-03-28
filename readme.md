@@ -74,14 +74,14 @@ includes temperature, humidity, co2, and volatile organic chemical (voc) sensors
  * ✅ ~platformio and arduino compatible~
  * ✅ ~pH sensor~
  * [ ] pid control mix to target setpoint pH/tds/ec - [_firmware in process_](https://github.com/GrayHatGuy/picopasco/tree/2bdc89169fcf1709cf48569881d38e65c02e824f/dev/picopasco-main-V4.3597447222071-alpha-hartree-pid)
- * [ ] sx1262 lora/wan - [_firmware in process_]()
- * [ ] wifi/bt/mqtt - [staged]()
+ * [ ] sx1262 lora/wan - [_verification_]()
+ * [ ] wifi/bt/mqtt - [_verification_]()
 ## plan 
  *  ### controls
     *  lighting timers
     *  hvac triggers pid control
  *  ### connectivity   
-    *  lora(wan) - [in process]()
+    *  lora(wan) - [_verification_]()
     *  wifi 
     *  mqtt
  *  ### ui 
@@ -92,7 +92,7 @@ includes temperature, humidity, co2, and volatile organic chemical (voc) sensors
         -  xiao
         -  esp32
         -  wioterm
-    * platformio - [in process]()
+    * platformio - [complete]()
 *  ### vids
     *  example of runtime [firmware output](https://youtu.be/fia2N3TB2j8)
     *  testing minimum [response time of relays](https://youtu.be/YmTmU25x0V8) 3 ms is the mininum trigger dwell otherwise relays fail to actuate mechanically.
