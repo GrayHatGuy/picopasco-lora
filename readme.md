@@ -83,7 +83,7 @@ includes temperature, humidity, co2, and volatile organic chemical (voc) sensors
  *  ### ui 
     * bt uart
     * wifi AP
-    * lorawan mobile app 
+    * lorawan console 
  *  ### portability  
     *  alternate mcu
         -  xiao
