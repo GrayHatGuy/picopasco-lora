@@ -7,19 +7,20 @@
 #include <SensirionI2CSht4x.h>
 #include <Wire.h>
 #include "pins_arduino.h" //custom header for seeed grove pico breakout
-#include <SoftwareSerial.h>
+//#include <SoftwareSerial.h>
 #include "sensirion_common.h"
 #include "sgp30.h"
-/*                             **user inputs**                       */
-#define pHPin A0                                     //pH pin added for rawdogRob
-#define TdsSensorPin A1                             //TDS sensor pin
-#define moisturePin A2                             //moisture sensor pin
+
+
 #define VREF 5.0                                  //TDS ADC ref. alt VCC 3.3v
 #define SCOUNT 30                                //TDS voltage samples - *currently not used* default 30
-
+/*                             **user inputs**                       */
+const int pHPin = 26 ;                                    //pH pin added for  A0
+const int TdsSensorPin = 27 ;                            //TDS sensor pin A1
+const int moisturePin = 28 ;                            //moisture sensor pin A2
 const int mixIntSP = 22500;                    //while wait auto mix interval [ms]
 const int n =4;                               //number of pump relays or mixes
-int ledPin = LED_BUILTIN;                    //led pin
+//int ledPin = 25;                    //led pin turn off GPIO25 for picow
 int t_loop = 97;                            //while wait interval for loop()
 int mixprint = 20;                         //number of status lines to print during mix dwell
 int looplast = millis();                  //last loop time stamp millis()
@@ -44,7 +45,9 @@ int mixcnt = 1;  //mixes since reboot
 s16 err = 0;  //error return SPG30
 u32 ah = 0; //absolute hydrogen *not used* except in formulae
 u16 scaled_ethanol_signal, scaled_h2_signal; //init SGP return
-SensirionI2CSht4x sht4x;  //init SHT4x return
+SensirionI2CSht4x sht4x;  //init SHT4x return 
+
+  
 
 void setup() { 
   Serial.begin(115200);  
@@ -91,16 +94,78 @@ void loop() {
       mix = 1; 
       Serial.println(String(millis())+"> SCANNING: trigger mix = 1 - starting mix now!"); 
     } 
-              //toggle led
     if (mix == 1){
-      stiritup();             //start mix
+ 
+    for (int m =0; m<n; m++){ 
+
+        String printStr = "";  
+        error = sht4x.measureHighPrecision(temperature, humidity);        //read sht4x
+        printStr = String(millis())+"> SCANNING: t," + temperature + ",rh," + humidity; u16 tvoc_ppb, co2_eq_ppm; 
+        err = sgp_measure_iaq_blocking_read(&tvoc_ppb, &co2_eq_ppm);      //read sgp30
+        if (err == STATUS_OK) { 
+          printStr = printStr + ",voc," + tvoc_ppb + ",co2," + co2_eq_ppm; 
+        } 
+        averageVoltage =  analogRead(TdsSensorPin) * (float)VREF/ 1024.0; float compensationCoefficient=1.0+0.02*(temperaturetds-25.0); //TDS calculations *add loop count for averaging SCOUNT*
+        float compensationVoltage=averageVoltage/compensationCoefficient; 
+        tdsValue=(133.42*compensationVoltage*compensationVoltage*compensationVoltage - 255.86*compensationVoltage*compensationVoltage + 857.39*compensationVoltage)*0.5; //TDS and ec formula
+        moistureValue = analogRead(moisturePin); //read moisture sensor 
+        pHValue = analogRead(pHPin); //read pH  
+        printStr = printStr + ",ec," + compensationVoltage + ",tds," + tdsValue + ",h20," + moistureValue +",pH," +(pHValue/100.00); 
+        String prntrelay =""; 
+        for (int k=0; k<n;k++){ 
+          prntrelay = prntrelay + ",S" + (k+1) + "," +String(tmixSP[k]) ; 
+        }
+        if (mixIntPV > millis()){
+            Serial.println(String(printStr+prntrelay+"," + String(mixIntPV - millis()))+","+mix); 
+        } else {
+          Serial.println(String(printStr+prntrelay)+","+mix); 
+        }
+
+      int pumpon = millis() + tmixSP[m];            //capture pump end time
+      digitalWrite(ctl[m], HIGH);                   //trigger relay high
+      Serial.println (String(millis())+"> MIXING: Pump #"+String(m+1)+" ON! for "+tmixSP[m]+" at "+millis()+" ms ends at "+pumpon+ " ms");
+        int cnt = 0;
+      while (pumpon >= millis()) {                  //while pumping print countdown to end at fixed interval
+        //blink(-1);                                  //blink toggle on demand (-1) else (n>=0 is blink interva)
+        Serial.println(String(millis())+"> MIXING: Pump #"+String(m+1)+" "+(pumpon - millis())+" ms of pump time remaining " + (mixprint-cnt) + "/" + mixprint ); cnt = cnt +1;
+        delay(tmixSP[m]/mixprint);                  //report status of the remaining pump time setting print interval at 1/19 of the dwell time.
+      } 
+      digitalWrite(ctl[m], LOW);
+      pumptotal = pumptotal + tmixSP[m];
+      Serial.println(String(millis())+"> MIXING: Pump #" + String(m+1) + " done! - " + millis() +" ms "); 
+      mix = 0; //reset mix for return to scan loop
+      mixIntPV =  mixIntSP + millis(); 
+      Serial.println(String (millis())+"> MIXING: Completed "+String(mixcnt )+ " mixes with a total pump on time of " + pumptotal+" ms since boot.. reset mix=" + String(mix) + " next mix at " + String(mixIntPV)+" ms"); mixcnt = mixcnt +1;
+    }
     }else {
-      sensors();                //call sensor scan
-      blink(-1);  
+      String printStr = "";  
+      error = sht4x.measureHighPrecision(temperature, humidity);        //read sht4x
+      printStr = String(millis())+"> SCANNING: t," + temperature + ",rh," + humidity; u16 tvoc_ppb, co2_eq_ppm; 
+      err = sgp_measure_iaq_blocking_read(&tvoc_ppb, &co2_eq_ppm);      //read sgp30
+      if (err == STATUS_OK) { 
+        printStr = printStr + ",voc," + tvoc_ppb + ",co2," + co2_eq_ppm; 
+      } 
+      averageVoltage =  analogRead(TdsSensorPin) * (float)VREF/ 1024.0; float compensationCoefficient=1.0+0.02*(temperaturetds-25.0); //TDS calculations *add loop count for averaging SCOUNT*
+      float compensationVoltage=averageVoltage/compensationCoefficient; 
+      tdsValue=(133.42*compensationVoltage*compensationVoltage*compensationVoltage - 255.86*compensationVoltage*compensationVoltage + 857.39*compensationVoltage)*0.5; //TDS and ec formula
+      moistureValue = analogRead(moisturePin); //read moisture sensor 
+      pHValue = analogRead(pHPin); //read pH  
+      printStr = printStr + ",ec," + compensationVoltage + ",tds," + tdsValue + ",h20," + moistureValue +",pH," +(pHValue/100.00); 
+      String prntrelay =""; 
+      for (int k=0; k<n;k++){ 
+        prntrelay = prntrelay + ",S" + (k+1) + "," +String(tmixSP[k]) ; 
+      }
+      if (mixIntPV > millis()){
+          Serial.println(String(printStr+prntrelay+"," + String(mixIntPV - millis()))+","+mix); 
+      } else {
+        Serial.println(String(printStr+prntrelay)+","+mix); 
+      }
+
     } 
     looplast = millis();
   }
 } 
+/*
 
 void blink(long led_int) { 
   pinMode(ledPin, OUTPUT);
@@ -123,48 +188,4 @@ void blink(long led_int) {
     digitalWrite(ledPin, ledState);
   }
 }
-void sensors() { 
-  String printStr = "";  
-  error = sht4x.measureHighPrecision(temperature, humidity);        //read sht4x
-  printStr = String(millis())+"> SCANNING: t," + temperature + ",rh," + humidity; u16 tvoc_ppb, co2_eq_ppm; 
-  err = sgp_measure_iaq_blocking_read(&tvoc_ppb, &co2_eq_ppm);      //read sgp30
-  if (err == STATUS_OK) { 
-    printStr = printStr + ",voc," + tvoc_ppb + ",co2," + co2_eq_ppm; 
-  } 
-  averageVoltage =  analogRead(TdsSensorPin) * (float)VREF/ 1024.0; float compensationCoefficient=1.0+0.02*(temperaturetds-25.0); //TDS calculations *add loop count for averaging SCOUNT*
-  float compensationVoltage=averageVoltage/compensationCoefficient; 
-  tdsValue=(133.42*compensationVoltage*compensationVoltage*compensationVoltage - 255.86*compensationVoltage*compensationVoltage + 857.39*compensationVoltage)*0.5; //TDS and ec formula
-  moistureValue = analogRead(moisturePin); //read moisture sensor 
-  pHValue = analogRead(pHPin); //read pH  
-  printStr = printStr + ",ec," + compensationVoltage + ",tds," + tdsValue + ",h20," + moistureValue +",pH," +(pHValue/100.00); 
-  String prntrelay =""; 
-  for (int k=0; k<n;k++){ 
-    prntrelay = prntrelay + ",S" + (k+1) + "," +String(tmixSP[k]) ; 
-  }
-  if (mixIntPV > millis()){
-      Serial.println(String(printStr+prntrelay+"," + String(mixIntPV - millis()))+","+mix); 
-  } else {
-    Serial.println(String(printStr+prntrelay)+","+mix); 
-  }
-} 
-  
-void stiritup(){ 
-    for (int m =0; m<n; m++){ 
-    sensors();
-    int pumpon = millis() + tmixSP[m];            //capture pump end time
-    digitalWrite(ctl[m], HIGH);                   //trigger relay high
-    Serial.println (String(millis())+"> MIXING: Pump #"+String(m+1)+" ON! for "+tmixSP[m]+" at "+millis()+" ms ends at "+pumpon+ " ms");
-      int cnt = 0;
-    while (pumpon >= millis()) {                  //while pumping print countdown to end at fixed interval
-      blink(-1);                                  //blink toggle on demand (-1) else (n>=0 is blink interva)
-      Serial.println(String(millis())+"> MIXING: Pump #"+String(m+1)+" "+(pumpon - millis())+" ms of pump time remaining " + (mixprint-cnt) + "/" + mixprint ); cnt = cnt +1;
-      delay(tmixSP[m]/mixprint);                  //report status of the remaining pump time setting print interval at 1/19 of the dwell time.
-    } 
-    digitalWrite(ctl[m], LOW);
-    pumptotal = pumptotal + tmixSP[m];
-    Serial.println(String(millis())+"> MIXING: Pump #" + String(m+1) + " done! - " + millis() +" ms "); 
-  } 
-  mix = 0; //reset mix for return to scan loop
-  mixIntPV =  mixIntSP + millis(); 
-  Serial.println(String (millis())+"> MIXING: Completed "+String(mixcnt )+ " mixes with a total pump on time of " + pumptotal+" ms since boot.. reset mix=" + String(mix) + " next mix at " + String(mixIntPV)+" ms"); mixcnt = mixcnt +1;
-}
+*/

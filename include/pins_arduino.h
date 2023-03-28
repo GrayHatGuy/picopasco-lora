@@ -36,4 +36,5 @@
 #define SPI_HOWMANY    (2u)
 #define WIRE_HOWMANY   (2u)
 
-#include "../generic/common.h"
+// FROM-> #include "../generic/common.h" include/common.h
+#include <common.h>
