@@ -80,8 +80,8 @@ includes temperature, humidity, co2, and volatile organic chemical (voc) sensors
  *  ### controls
     *  lighting timers
     *  hvac triggers pid control
- *  ### connectivity   
-    *  lora(wan) - [_verification_]()
+ *  ### networking [_verification_]()   
+    *  lora(wan) 
     *  wifi 
     *  mqtt
  *  ### ui 
@@ -92,7 +92,7 @@ includes temperature, humidity, co2, and volatile organic chemical (voc) sensors
         -  xiao
         -  esp32
         -  wioterm
-    * platformio - [complete]()
+    * platformio - [complete](https://github.com/GrayHatGuy/picopasco-lora/blob/615ff86d20f14e15b95a759636a003d90ad71855/platformio.ini)
 *  ### vids
     *  example of runtime [firmware output](https://youtu.be/fia2N3TB2j8)
     *  testing minimum [response time of relays](https://youtu.be/YmTmU25x0V8) 3 ms is the mininum trigger dwell otherwise relays fail to actuate mechanically.
