@@ -80,10 +80,10 @@ includes temperature, humidity, co2, and volatile organic chemical (voc) sensors
  *  ### controls
     *  lighting timers
     *  hvac triggers pid control
- *  ### networking [_verification_]()   
-    *  lora(wan) 
-    *  wifi 
-    *  mqtt
+ *  ### networking  
+    *  lora(wan) - [_verification_]() 
+    *  wifi -  [_verification_]() 
+    *  mqtt -  [_hold_]() 
  *  ### ui 
     * local wifi/bt  
     * remote mobile app
