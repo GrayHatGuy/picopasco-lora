@@ -2,7 +2,17 @@
 
   #### *- to feed oneself a little bit*
 
- ## description
+# Open issues
+The current state of this Waveshare Example build compiles flashes and produces no radio functionality.  Attempted build using pico-sdk resulted in errors.
+[Waveshare Example](https://www.waveshare.com/w/upload/d/d9/Pico-LoRa-SX1262-868M_Code_%281%29.zip)
+[Waveshare lorawan core](https://github.com/siuwahzhong/lorawan-library-for-pico)
+
+Need to verify repo resolves the issue.
+[Waveshare SX1262 Lorawan core issues bug fix](https://github.com/BNNorman/Waveshare-Pico-LoRa-SX1262-868M/tree/main)
+
+Alternatives would be a non-waveshare core SX1262 [Lora-E5](https://files.seeedstudio.com/products/317990687/res/LoRa-E5%20module%20datasheet_V1.0.pdf) or [RFM95 radio](https://github.com/waveshareteam/pico-lorawan)
+
+## description
 LoRaWAN connectivity via SX1262 with sensor monitor and control hardware/firmware for a personal economical and scalable grow system using a raspberrypi pico and standard off the shelf sensors and components. 
 
 #### **present state** 
